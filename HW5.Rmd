@@ -1,0 +1,92 @@
+---
+title: "HW5"
+output: html_document
+---
+
+```{r}
+require(ggplot2)
+require(grid)
+data(diamonds)
+
+```
+
+**Question 1**
+
+Using `sapply` to extract all numeric columns from the data frame.
+
+The fuction `numericCols` takes one input parameter, a dataframe `df`. The function returns a dataframe of only the numeric variables contained in the input parameter.
+```{r}
+numericCols <- function(df){
+   dfNum <- sapply(df, is.numeric)
+   df <- df[dfNum]
+   return(df)
+}
+
+# Testing that Function only selects numeric cols
+head(numericCols(diamonds))
+```
+
+**Question 2**
+
+The function `columnCorr` takes one input parameters, a data frame `df`. The function returns a dataframe of the Pearson correlation coeffcients for each pair of numeric columns, making the use of function `numericCols` defined above. 
+```{r}
+columnCorr <- function(df){
+  # Using numericCols to get a dataframe of just numeric columns
+  df <- numericCols(df)
+  
+  # Initializing variables to be used in nested loop below
+  row <- 0   # Creating a variable that will hold the number of rows in the output dataframe
+  pairs <- c() # Creating an empty vector to hold the pairs of variables
+  corrs <- c() # Creating an empty vector to hold the correlations
+  
+  # Iterating through the variables in the new (numeric only) data frame, starting with the first
+  # variable and ending with the second to last variable.
+  for( a in 1:(ncol(df)-1)) {
+    # Now interating through each of the subsequent variables left in the dataframe.
+    for(b in (a+1):(ncol(df))) {
+      # Adding a row to the dataframe
+      row <- row + 1
+      # Adding the names of the columns to the pairs vector
+      pairs[row] <- paste(colnames(df)[a], colnames(df)[b], sep="-")
+      # Calculating the Pearson Coefficient of the row
+      corrs[row] <- cor(df[,a], df[,b], method="pearson")
+    }
+  }
+  
+  # Create a new dataframe. There will be 2 columns, one for pairs and one for corrs.
+  df <- data.frame(pairs, corrs)
+  # Updating the column names
+  names(df) <- c('Pairs', "Pearsons's Corr.")
+  return(df) 
+}
+
+columnCorr(diamonds)
+```
+
+**Question 3**
+
+```{r}
+
+df <- numericCols(diamonds)
+  
+# Iterating through the variables in the new (numeric only) data frame, starting with the first
+# variable and ending with the second to last variable.
+for( a in 1:(ncol(df)-1)) {
+  # Now interating through each of the subsequent variables left in the dataframe.
+  for(b in (a+1):(ncol(df))) {
+    # Data to plot
+    data <- data.frame(df[,a],df[,b])
+    # Adding axis lables to plotting data
+    x <- colnames(df)[a]
+    y <- colnames(df)[b]
+    colnames(data) <- c(x,y)
+    # Calculating Pearson Corr for the title
+    corr <- cor(df[,a], df[,b], method="pearson")
+    
+    plots <- ggplot(data, aes_string(x=x,y=y)) + geom_point() + ggtitle(paste("Pearson Correlation for ",x,"and",y,":",corr))
+    plot(plots)
+    }
+  }
+  
+
+```
