@@ -1,0 +1,305 @@
+---
+title: "Homework 4"
+output: html_document
+---
+**by Yogi Patel**
+
+
+**Question One:**
+
+*A.*  Creating a vector from 1 - 20.
+```{r}
+vec1 <- c(1:20)
+vec1
+```
+
+*B.*  Creating a vector that reverses `vec1`
+```{r}
+vec2 <- rev(vec1)
+vec2
+```
+
+*C.*  Combining the vectors `vec1` and `vec`
+```{r}
+vec3 <- c(vec1[1:19],vec2)
+vec3
+```
+
+*D.*  Creating a vector named `tmp`
+```{r}
+tmp <- c(4,6,3)
+tmp
+```
+
+*E.*  Replicating `tmp` 10 times
+```{r}
+tmp2 <- rep(tmp, 10)
+tmp2
+```
+
+*F.*  Adding a 4 to the end of `tmp3`
+```{r}
+tmp3 <- c(tmp2, 4)
+tmp3
+```
+
+*G.*  Creating vector `tmp4`
+```{r}
+tmp4 <- rep(tmp, c(10,20,30))
+tmp4
+```
+
+
+**Question Two**
+
+Creating a vector of exp(x)*cos(x) for x=(3,3.1,3.2,...,5.9,6)
+```{r}
+x <- seq(3, 6, by=0.1)
+x
+expCos <- exp(x)*cos(x)
+expCos
+```
+
+**Question Three**
+
+*A.* 
+Creating vector for exponents for `.1`
+```{r}
+a <- seq(3, 36, by=3)
+```
+Creating a vector of `.1` the length of `a`
+```{r}
+b <- rep(.1, length(a))
+```
+Creating a vector that exponentiates vector `b` by vector `a`
+```{r}
+c <- b^a
+```
+Creating vector of exponents for `.2`
+```{r}
+d <- seq(1, 34, 3)
+```
+Creating a vector of `.2` the length of `d`
+```{r}
+e <- rep(.2, length(d))
+```
+Creating a vectore that exponentiates vector `e` by vector `d`
+```{r}
+f <- e^d
+```
+Multiplying the vectors `c` and `f` for final answer
+```{r}
+q3A <- c *f
+q3A
+```
+
+*B.*
+Creating the denominator and exponent vector `denEx`
+```{r}
+denEx <- c(1:25)
+```
+Creating the numerator vector `numer` which is a sequnce of 2 in length 25
+```{r}
+numer <- rep(2, 25)
+```
+Creating the final vector
+```{r}
+q3B <- (numer^denEx)/denEx
+q3B
+```
+
+**Question Four**
+
+*A.*
+
+Creating initial sequnce of a all `i` values.
+```{r}
+i <- c(10:100)
+```
+Performing calculation for each `i` value.
+```{r}
+iCalc <- ((i^3) + (4*(i^2)))
+```
+Performing the summation of `iCalc`.
+```{r}
+sum1 <- sum(iCalc)
+sum1
+```
+
+
+*B.*
+Creating the initial sequence of `i` values.
+```{r}
+i <- c(1:25)
+```
+Performing calculation for each `i` value.
+```{r}
+iCalc <- (((2^i)/i) + ((3^i)/(i^2)))
+```
+Performing the summation of `iCalc`.
+```{r}
+sum2 <- sum(iCalc)
+sum2
+```
+
+
+** Question Five **
+
+*A.* Creating a vector of 30 labels, with a space.
+```{r}
+labels <- paste("label", 1:30, sep = " ")
+labels
+```
+
+*B.* Creating a vector of 30 fns, without a space.
+```{r}
+fns <- paste("fn", 1:30, sep = "")
+fns
+```
+
+
+** Question Six **
+Creating two random vectors `xVec` and `yVec`
+```{r}
+xVec <- sample(0:999, 250, replace=T)
+yVec <- sample(0:999, 250, replace=T)
+xVec
+yVec
+```
+
+*A.* Creating a vector of `yVec(i) - xVec(i-2)`
+```{r}
+newVec1 <- (yVec[2:250] - xVec[1:249])
+newVec1
+# Checking length... should be 249
+length(newVec1)
+```
+
+*B.* Creating a vector of `sin(y[i-1])/cos(x[1])`
+```{r}
+newVec2 <- (sin(yVec[1:249])/cos(xVec[2:250]))
+newVec2
+```
+
+*C.* Creating a vector of `x(1)+2x(2)-x(3)`
+```{r}
+newVec3 <- xVec[1:248]+(2*xVec[2:249])-xVec[3:250]
+newVec3
+# Checking length... should be 248
+length(newVec3)
+```
+
+*D.* 
+
+Creating a vector for the summation
+```{r}
+sumVec <- (exp((xVec[2:250]*-1)))/(xVec[1:249]+10)
+sumVec
+# Checking length... should be 249
+length(sumVec)
+```
+
+Performing the summation of `sumVec`
+```{r}
+summation <- sum(sumVec)
+summation
+```
+
+
+**Question Seven**
+*A.* Picking out values of `yVec` that are greater than 600 and storing as `y600`
+```{r}
+y600 <- yVec[yVec > 600]
+y600
+```
+
+*B.* Getting index positions of values greater than 600 in `yVec`
+```{r}
+y600Index <- which(yVec > 600)
+y600Index
+
+# As a check, just making sure the vector or values and vector of indexes are the same length
+length(y600) == length(y600Index)
+
+```
+
+*C.* Getting values of `xVec` that correspond to the indexes of where `yVec` is greater than 600.
+```{r}
+xIndex <- xVec[y600Index]
+xIndex
+```
+
+*D* Creating a vector of `sqrt(abs(x - xbar))`
+```{r}
+q7D <- sqrt(abs(xVec - mean(xVec)))
+q7D
+```
+
+*E* Calculating number of values in `yVec` that are within 200 of the max value of vVec
+```{r}
+ymax200 <- length(yVec[yVec <= (max(yVec)-200)])
+ymax200
+
+# 194 values in yVec are within 200 of the max value
+```
+
+
+*F.* Calculating number of values in `xVec` that are divisible by 2
+```{r}
+evenX <- length(xVec[(xVec %% 2) == 0 ])
+evenX
+
+# 129 values in xVec are divisible by 2
+```
+
+
+*G.* Sorting `xVec` by order of `yVec`
+```{r}
+sort(xVec, partial = order(yVec))
+xVec
+
+```
+
+*H.*
+
+Creating the vector of indeces
+```{r}
+indexes <- seq(1, 250, by=3)
+indexes
+```
+
+Creating a vector picking on values in `yVec` from `indexes`
+```{r}
+newY <- yVec[indexes]
+newY
+
+length(indexes) == length(newY)
+```
+
+** Question 8 **
+Creating the `numerator` vector
+```{r}
+numerator <- seq(2,38,by=2)
+```
+
+Creating the `denominator` vector
+```{r}
+denominator <- seq(3,39,by=2)
+```
+
+Dividing `numerator` by `denominator`
+```{r}
+numdem <- numerator / denominator
+```
+
+Calculating the cumulative product
+```{r}
+prodVec <- cumprod(numdem)
+```
+
+Adding 1 to the summation of `prodVec` for the final answer
+```{r}
+answer8 <- 1 + sum(prodVec)
+answer8
+```
+
