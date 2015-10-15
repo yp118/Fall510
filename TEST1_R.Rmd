@@ -1,0 +1,166 @@
+---
+title: "TEST1_R"
+author: "Yogi Patel"
+output: html_document
+---
+
+
+Importing data
+```{r}
+require(ggplot2)
+require(grid)
+require(plyr)
+data(diamonds)
+```
+
+### Question One
+Updating diamonds dataframe to include column with logical equivalent of the ratio of variable `vs` in dataframe `mtcars`.
+```{r}
+# Determining the ratio of 1's and 0's in mtcars$vs
+x <- count(mtcars, 'vs')
+
+# Calculating ratio of 1's in dataframe
+propOnes <- x$freq[2]/(x$freq[2]+x$freq[1])
+propOnes
+
+# Determining number of rows in diamonds dataframe
+numObs <- nrow(diamonds)
+numObs
+
+# Calculating number of Trues's needed in diamonds dataframe
+numTrue <- propOnes * numObs
+numTrue
+
+########################################################################
+# SIDE BAR -- In the email Gerhard sent for the interpretation of question one, the student reported that the number of Trues would be 23,402. But it looks like he reported the number of rows in Diamonds as 53,490, NOT 53,940 (the actual number).
+
+# Just checking to see if I get the same number of Trues as reported in the email using the incorrect number of rows. 
+
+propOnes * 53490
+
+# Yes, using the 53490 get's the same number of Trues as in the email. I'll continue using the correct number of rows.
+
+########################################################################
+
+# Getting a whole number value for numTrue
+numTrue <- round(numTrue,0)
+
+# Adding a column, vs, to diamonds dataframe. Making all values false.
+diamonds$vs <- FALSE
+head(diamonds)
+
+# Updating diamonds$vs column with correct number of True dataframes
+diamonds$vs[0:numTrue] <- TRUE
+head(diamonds)
+
+# Confirming ratio of T/F is about equal (we had to round) in mtCars and diamonds
+
+# Getting ratio of T/F's in diamonds$vs
+y <- count(diamonds, 'vs')
+propTrues <- y$freq[2]/(y$freq[2]+y$freq[1])
+
+# Rounding proportions for comparison
+propTrues <- round(propTrues, 3)
+propOnes <- round(propOnes, 3)
+
+# Checking if equal
+propTrues == propOnes
+
+# Finally, confirming that diamonds$vs is a logical vavriable
+typeof(diamonds$vs)
+```
+
+The proportion of True to False in `diamonds$vs` is equal to the proportion of 1 to 0 in `mtcars$vs`. Also, we have confirmed that `diamonds$vs` is a logical variable. 
+
+
+
+
+### Question Two
+
+Creating function `getFactLogic` that will take one input parameter `df`, a dataframe. The function will return a new data frame including only the factor and logical columns in the dataframe. 
+
+```{r}
+# Creating function getFactLogic
+getFactLogic <- function(df) {
+  
+  # Creating an empty dataframe to be populated with factor/logical variables
+  # Number of rows is set to match input dataframe
+  newdf <- data.frame(matrix(0, ncol = 0, nrow = nrow(df)))
+  
+  # Looping through each column to determine if they are factor/logical
+  for (i in names(df)) {
+    # Checking if variable is a factor variable
+    if (is.factor(df[[i]])){
+      # If it is a factor variable, add it to the new dataframe
+      newdf[[i]] <- df[[i]]
+    }
+    # Checking if variable is a logical variable
+    else if (is.logical(df[[i]])){
+      # If it is a logical variable, add it to the new dataframe
+      newdf[[i]] <- df[[i]]
+    }
+  }
+  
+  # Checking if any columns were added to the new dataframe.
+  if (ncol(newdf) == 0){
+    # If no columns were added, we do not want to return an empty dataframe.
+    # Create error and exit function
+    stop("No Logical or Factor variables found")
+  }
+  # If one or more columns are in dataframe, return new dataframe
+  else { 
+      return (newdf) 
+      }
+}
+
+# Checking if factor/logical variables in diamonds are returned
+y <- getFactLogic(diamonds)
+head(y)
+str(y)
+
+# Checking if error works (mtcars does not contain factor/logical variables)
+# Commented out so rest of document can run.
+# x <- getFactLogic(mtcars)
+```
+
+
+### Question Three
+
+Plotting a bar graph for every factor and logical variable.
+
+First, getting a new data frame `diamondsPlot` with only factor and logical variables.
+```{r}
+diamondsPlot <- getFactLogic(diamonds)
+head(diamondsPlot)
+```
+
+Now looping through columns in `diamondsPlot` to graph each one. 
+```{r}
+# Iterating through the columns in diamondsPlot
+for (i in names(diamondsPlot)) {
+# Creating a frequancy table for the column
+x <- count(diamondsPlot, i)
+# Creating a bar plot of the frequency
+barplot(x$'freq', # plot using Frequency column
+        main = i, # Title set to name of variable
+        names.arg= x[[i]], # X lables set to values
+        ylab = "Frequency") # Y axis name
+}
+```
+
+
+
+### Question Four
+
+Creating a list `freq` of frequency tables for factor/logical variables
+```{r}
+# Will continue to use diamondsPlot
+freq <- list()
+# Iterating through the columns in diamondsPlot
+for (i in names(diamondsPlot)){
+   # Generating frequency table and adding it to freq.
+   freq[[i]] <- table(diamondsPlot[[i]])
+}
+
+freq
+freq[1]
