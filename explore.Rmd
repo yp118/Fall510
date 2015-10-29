@@ -1,0 +1,176 @@
+---
+title: "Explore"
+author: "Yogi Patel"
+date: "October 22, 2015"
+output: html_document
+---
+
+
+```{r}
+require(ggplot2)
+require(grid)
+require(plyr)
+data(diamonds)
+data(mtcars)
+
+# Recreating Diamonds$VS column
+# Determining the ratio of 1's and 0's in mtcars$vs
+x <- count(mtcars, 'vs')
+# Calculating ratio of 1's in dataframe
+propOnes <- (x$freq[2]/(x$freq[2]+x$freq[1]))
+# Determining number of rows in diamonds dataframe
+numObs <- nrow(diamonds)
+# Calculating number of Trues's needed in diamonds dataframe
+numTrue <- propOnes * numObs
+# Getting a whole number value for numTrue
+numTrue <- round(numTrue,0)
+# Getting number of false
+numFalse <- numObs - numTrue
+# Creating 'vs' column in diamonds
+diamonds$vs <- as.logical(rep(c(0,1), c(numTrue, numFalse)))
+
+```
+
+## Creating Explore Function
+```{r}
+
+explore <- function(df, vec, thresh) {
+  
+  # Question One:
+  # Loading ggplot
+  library(ggplot2)
+  
+  # Getting the numeric columns 
+  numCol <- df[which(lapply(df, is.numeric) == TRUE)]
+
+  # Iterating through numeric columns
+  for (i in 1:length(numCol)) {
+  # Iterate through bin sizes
+    for (k in vec) {
+      # Creating a histogram with counts
+      # Initializing plot
+      count <- ggplot(numCol, aes(x = numCol[[i]]), environment=environment())
+      # Setting plot to histogram, with blue as the bin fill color and "k" as the width
+      count <- count + geom_histogram(fill = 'blue', binwidth = k) +
+               # Adding X, Y, and Title labels to the graph
+               labs(x = names(numCol[i]), y = "Count", title = paste("Bin size:", k)) +
+               # Adding a vertical line at the mean
+               geom_vline(xintercept = colMeans(numCol[i]), colour='red')
+      # Updating the aesthetic of count graph to get a density histrogram
+      density <- count + aes(y = ..density..) + labs(y = "Density")
+      # Printing the histograms
+      print(count)
+      print(density)    
+    } 
+  } 
+  
+  # Question Two:
+  # Getting the categorical and binary variables
+  catCol <- cbind(df[which(lapply(df, is.logical) == TRUE)], df[which(lapply(df, is.factor) == TRUE)])
+  
+  # Iterating through all categorical columns
+  for (i in 1:length(catCol)) {
+    # Initializing plot
+    gbar <- ggplot(catCol, aes(x = catCol[[i]]), environment=environment())
+    # Generating grey bar chart and adding x and y labels
+    gbar <- gbar + geom_bar(fill = 'grey') + labs(x = names(catCol[i]), y = "Count")
+    # Printing the bar graph
+    print(gbar)
+  }
+  
+  # Question Three:
+  
+  # Creating Pearson's correlation coefficient table
+  cors <- cor(numCol, method = "pearson")
+  
+  # Creating a variable for row count
+  row <- 0
+  # Creating empty vectors for pairs and rsquare values
+  pairs <- c()
+  rsquare <- c()
+  
+  # Iterating through columns of the correlation table
+  for (i in 1:(ncol(cors)-1)) {
+    # Iterating through next columns of correlation table
+    for (k in (i+1):ncol(cors)){
+      # Incresing vector row count
+      row <- row + 1
+      # Adding name of variables to pair list
+      pairs[row] <- paste(colnames(cors)[i], colnames(cors)[k], sep="-")
+      # Adding r-sqaure value for pair of variables to r-square vector
+      rsquare[row] <- cors[i,k]^2
+    }
+  }
+  
+  # Creating a dataframe from the name combinations and rsquare vectors
+  rsquares <- data.frame(pairs, rsquare)
+  # Updating column names for the rsquares data frame
+  names(rsquares) <- c('Pairs', "R-Squared")
+  
+  
+  # Question 4
+  
+  # Intiating an empty object that will be the list we ultimately return from function
+  returnList <- NULL
+  
+  
+  # Creating frequency tables for cateogorical and binary variables
+  for (i in 1:length(catCol)) {
+    # Creating frequecny table for the column
+    freq <- table(catCol[i])
+    # Converting Frequency table into dataframe
+    freq <- data.frame(freq)
+    # Updating Column names to include variable name
+    names(freq) <- c(names(catCol)[i], "Frequency")
+    # Adding frequency table to the list
+    returnList <- c(returnList, list(freq))
+  }
+  
+  # Adding the R-Sqaures dataframe (from Q3) to returnList
+  returnList <- c(returnList, list(rsquares))
+  
+  
+  # Initializing variables to be used in nested loop below
+  row <- 0   # Creating a variable that will hold the number of rows in the output dataframe
+  pairs <- c() # Creating an empty vector to hold the pairs of variables
+  corrs <- c() # Creating an empty vector to hold the correlations
+
+  # Iterating through the variables in the new (numeric only) data frame, starting with the first
+  # variable and ending with the second to last variable.
+  for( a in 1:(ncol(numCol)-1)) {
+    # Now interating through each of the subsequent variables left in the dataframe.
+    for(b in (a+1):(ncol(numCol))) {
+      # Checking if Pearson Coefficient is larger than threshold
+      if (cor(numCol[,a], numCol[,b], method="pearson") > thresh) {
+         # Adding a row to the dataframe
+      row <- row + 1
+      # Adding the names of the columns to the pairs vector
+      pairs[row] <- paste(colnames(numCol)[a], colnames(numCol)[b], sep="-")
+      # Calculating the Pearson Coefficient of the row
+      corrs[row] <- cor(numCol[,a], numCol[,b], method="pearson")
+    }
+      }
+     
+  }
+
+  # Create a new dataframe. There will be 2 columns, one for pairs and one for corrs.
+  threshCorrs <- data.frame(pairs, corrs)
+  # Updating the column names
+  names(threshCorrs) <- c('Pairs', "Pearsons's Corr.")
+  
+  # Adding threshCorrs to returnList - any correlation greater than our threshold.
+  returnList <- c(returnList, list(threshCorrs))s
+  
+  
+  # Returning final list for function
+  return(returnList)
+
+  }
+  
+# Question 5:
+# Testing the function explore
+
+explore(diamonds, list(5, 20, 50), .25)  
+
+
+# Looks like it's working to me. 
