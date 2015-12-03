@@ -1,0 +1,556 @@
+---
+title: "TEST2_R"
+author: "Yogi Patel"
+date: "November 26, 2015"
+output: html_document
+---
+
+Loading the abalone dataset
+
+```{r}
+uciaddress <- "http://archive.ics.uci.edu/ml/machine-learning-databases/"
+dataset <- "abalone/abalone.data"
+getdataset <- paste(uciaddress, dataset, sep="")
+abalone <- read.csv(getdataset)
+str(abalone)
+
+# Naming the columns
+colnames(abalone) <- c("Gender","Length","Diameter",
+                       "Height", "Whole_wgt",
+                       "Shucked_wgt", "Viscera wgt",
+                       "Shell wgt", "Rings")
+str(abalone)
+```
+
+####Question 1
+
+```{r}
+
+# To get random samples, using the random samples function from class. 
+
+# Declaring functions
+randomSample = function(dataframe,n,replacement) {     
+  return (dataframe[sample(nrow(dataframe), n, replace=replacement),]) }
+
+# Calculating sample sizes for 1%, 10%, 25%, 50%, 80% samples
+n1 <- as.integer(.01 * nrow(abalone))
+n10 <- as.integer(.10 * nrow(abalone))
+n25 <- as.integer(.25 * nrow(abalone))
+n50 <- as.integer(.5 * nrow(abalone))
+n80 <- as.integer(.8 * nrow(abalone))
+
+# Getting random samples
+abSample1 <- randomSample(abalone, n1, FALSE)
+abSample10 <- randomSample(abalone, n10, FALSE)
+abSample25 <- randomSample(abalone, n25, FALSE)
+abSample50 <- randomSample(abalone, n50, FALSE)
+abSample80 <- randomSample(abalone, n80, FALSE)
+
+# Creating dataframes with min, max, mean, and variance for each sample 
+abSample1 <- data.frame(c( min(abSample1$Whole_wgt), max(abSample1$Whole_wgt), mean(abSample1$Whole_wgt), var(abSample1$Whole_wgt) ))
+abSample10 <- data.frame(c( min(abSample10$Whole_wgt), max(abSample10$Whole_wgt), mean(abSample10$Whole_wgt), var(abSample10$Whole_wgt) ))
+abSample25 <- data.frame(c( min(abSample25$Whole_wgt), max(abSample25$Whole_wgt), mean(abSample25$Whole_wgt), var(abSample25$Whole_wgt) ))
+abSample50 <- data.frame(c( min(abSample50$Whole_wgt), max(abSample50$Whole_wgt), mean(abSample50$Whole_wgt), var(abSample50$Whole_wgt) ))
+abSample80 <- data.frame(c( min(abSample80$Whole_wgt), max(abSample80$Whole_wgt), mean(abSample80$Whole_wgt), var(abSample80$Whole_wgt) ))
+abSample100 <- data.frame(c( min(abalone$Whole_wgt), max(abalone$Whole_wgt), mean(abalone$Whole_wgt), var(abalone$Whole_wgt) ))
+
+# Combining dataframes of summary statistics from samples
+SampleStats <- cbind(abSample1, abSample10, abSample25, abSample50, abSample80, abSample100)
+
+# Naming rows and columns of SampleStats dataframe
+colnames(SampleStats) <- c("1% Sample", "10% Sample", "25% Sample", "50% Sample", "80% Sample", "100% Sample")
+rownames(SampleStats) <- c("SampleMin", "SampleMax", "SampleMean", "SampleVariance")
+
+# 6 columns and 4 fours, just like the question asks.
+str(SampleStats)
+
+```
+
+
+####Question 2
+
+```{r}
+# Loading necessary libraries
+library(ggplot2)
+library(grid)
+
+# Creating function creates a grid of histograms for each row of the input dataframe
+histGrid <- function(df, transpose=FALSE) {
+  
+  # If transpose = true, transposing the the input dataframe before creating graphs
+  if (transpose == TRUE) {
+    df <- data.frame(t(df))
+  }
+  
+  # Getting number of columns the grid will need
+  cols <- round(ncol(df)/2)
+  
+  # Creating a new grid page
+  grid.newpage()
+  
+  # Creating layout for grid 
+  pushViewport(viewport(layout = grid.layout(cols, 2)))
+  
+  # Creating vplayout function to help place charts
+  vplayout <- function(x,y,a){ 
+    viewport(layout.pos.row = x, layout.pos.col = y,angle = a) 
+  }
+  
+  # Looping through first half of the statistics
+  for (k in 1:cols) {
+    # Creating variable to store column name
+    x.stat <-colnames(df)[k]
+    # Creating an empty plot
+    hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=df, aes_string(x=x.stat, y ="..density.."), binwidth=0.01)
+    # Pushing the plot to the grid using vplayout function created above
+    print(hist, vp = vplayout(k,1,0))
+  }
+   # Looping through second half of the statistics 
+  for (k in (cols+1):ncol(df)) {
+    # Creating variable to store column name
+    x.stat <-colnames(df)[k]
+    # Creating an empty plot
+    hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=df, aes_string(x=x.stat, y ="..density.."), binwidth=0.01)
+    # Pushing the plot to the grid using vplayout function created above
+    print(hist, vp = vplayout((k-cols),2,0))
+  }
+
+}
+
+# Running function of 
+histGrid(SampleStats, transpose=TRUE)
+
+```
+
+
+####Question 3
+
+```{r}
+
+# Creating an empty dataframe that will be used to store 1000 samples
+Samples1000 <- data.frame("1% Sample" = 0, "10% Sample" = 0, "25% Sample" = 0, "50% Sample" = 0 , "80% Sample" = 0)
+
+# Starting a for loop that iterates 1000 times
+for(i in 1:1000) {
+  
+  # Taking random sample using sample size determined above 
+  # Getting random samples
+  abSample1 <- randomSample(abalone, n1, FALSE)
+  abSample10 <- randomSample(abalone, n10, FALSE)
+  abSample25 <- randomSample(abalone, n25, FALSE)
+  abSample50 <- randomSample(abalone, n50, FALSE)
+  abSample80 <- randomSample(abalone, n80, FALSE)
+  
+  # Adding sample to the empty dataset
+  Samples1000[i,]<- c(mean(abSample1$Whole_wgt),
+                      mean(abSample10$Whole_wgt),
+                      mean(abSample25$Whole_wgt),
+                      mean(abSample50$Whole_wgt),
+                      mean(abSample80$Whole_wgt))
+  
+}
+
+# Now the dataframe has four columns coressponding to each the four calculated sample statistcs and 1000 rows for 1000 samples.
+# The 1%, 10%, 25%, 50%, and 80% sample sizes each make up 1/5 of the dataframe
+str(Samples1000)
+
+```
+
+
+###Question 4
+
+```{r}
+
+# Adding the 100% sample to the dataframe
+Samples1000[,6] <- abSample100[3,]
+
+# Naming rows and columns of Samples1000 dataframe
+colnames(Samples1000) <- c("x1_Sample", "x10_Sample", "x25_Sample", "x50_Sample", 
+                           "x80_Sample", "x100_Sample")
+
+# Creating grid of histograms
+histGrid(Samples1000)
+
+```
+
+
+###Question 5
+
+```{r}
+
+# Adding Mins Samples1000 to SampleStats
+SampleStats[5,] <- c(min(Samples1000[,1]), max(Samples1000[,2]), min(Samples1000[,3]), 
+                     min(Samples1000[,4]), min(Samples1000[,5]), min(Samples1000[,6]))
+
+# Adding Maxes Samples1000 to SampleStats
+SampleStats[6,] <- c(max(Samples1000[,1]), max(Samples1000[,2]), max(Samples1000[,3]), 
+                     max(Samples1000[,4]), max(Samples1000[,5]), max(Samples1000[,6]))
+
+# Adding Means Samples1000 to SampleStats
+SampleStats[7,] <- c(mean(Samples1000[,1]), mean(Samples1000[,2]), mean(Samples1000[,3]), 
+                     mean(Samples1000[,4]), mean(Samples1000[,5]), mean(Samples1000[,6]))
+
+# Adding variances Samples1000 to SampleStats
+SampleStats[8,] <- c(var(Samples1000[,1]), var(Samples1000[,2]), var(Samples1000[,3]), 
+                     var(Samples1000[,4]), var(Samples1000[,5]), var(Samples1000[,6]))
+
+# Updating row names for newly added columns
+rownames(SampleStats)[5:8] <- c("ResampleMin", "ResampleMax", "ResampleMean", "ResampleVariance")
+
+# New SampleStats dataframe - transposed with new Resample rows added
+SampleStats
+```
+
+
+###Question 6
+```{r}
+# Creating a histogram
+sampleMeans <- data.frame(t(SampleStats["SampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=abalone, aes(x=Whole_wgt, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =sampleMeans,(aes(xintercept = SampleMean, colour = "red" )))
+print(hist)
+```
+
+
+###Question 7
+```{r}
+# Creating a histogram
+resampleMeans <- data.frame(t(SampleStats["ResampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=abalone, aes(x=Whole_wgt, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =resampleMeans,(aes(xintercept = ResampleMean, colour = "red" )))
+print(hist)
+```
+
+##Question 8 --- START
+
+####Question 1 `diamonds$carat`
+
+```{r}
+
+# To get random samples, using the random samples function from class. 
+
+# Calculating sample sizes for 1%, 10%, 25%, 50%, 80% samples
+n1 <- as.integer(.01 * nrow(diamonds))
+n10 <- as.integer(.10 * nrow(diamonds))
+n25 <- as.integer(.25 * nrow(diamonds))
+n50 <- as.integer(.5 * nrow(diamonds))
+n80 <- as.integer(.8 * nrow(diamonds))
+
+# Getting random samples
+abSample1 <- randomSample(diamonds, n1, FALSE)
+abSample10 <- randomSample(diamonds, n10, FALSE)
+abSample25 <- randomSample(diamonds, n25, FALSE)
+abSample50 <- randomSample(diamonds, n50, FALSE)
+abSample80 <- randomSample(diamonds, n80, FALSE)
+
+# Creating dataframes with min, max, mean, and variance for each sample 
+abSample1 <- data.frame(c( min(abSample1$carat), max(abSample1$carat), mean(abSample1$carat), var(abSample1$carat) ))
+abSample10 <- data.frame(c( min(abSample10$carat), max(abSample10$carat), mean(abSample10$carat), var(abSample10$carat) ))
+abSample25 <- data.frame(c( min(abSample25$carat), max(abSample25$carat), mean(abSample25$carat), var(abSample25$carat) ))
+abSample50 <- data.frame(c( min(abSample50$carat), max(abSample50$carat), mean(abSample50$carat), var(abSample50$carat) ))
+abSample80 <- data.frame(c( min(abSample80$carat), max(abSample80$carat), mean(abSample80$carat), var(abSample80$carat) ))
+abSample100 <- data.frame(c( min(diamonds$carat), max(diamonds$carat), mean(diamonds$carat), var(diamonds$carat) ))
+
+# Combining dataframes of summary statistics from samples
+SampleStats <- cbind(abSample1, abSample10, abSample25, abSample50, abSample80, abSample100)
+
+# Naming rows and columns of SampleStats dataframe
+colnames(SampleStats) <- c("1% Sample", "10% Sample", "25% Sample", "50% Sample", "80% Sample", "100% Sample")
+rownames(SampleStats) <- c("SampleMin", "SampleMax", "SampleMean", "SampleVariance")
+
+# 6 columns and 4 fours, just like the question asks.
+str(SampleStats)
+
+```
+
+
+####Question 2 `diamonds$carat`
+
+```{r}
+
+# Running function of 
+histGrid(SampleStats, transpose=TRUE)
+
+```
+
+
+####Question 3 `diamonds$carat`
+
+```{r}
+
+# Creating an empty dataframe that will be used to store 1000 samples
+Samples1000 <- data.frame("1% Sample" = 0, "10% Sample" = 0, "25% Sample" = 0, "50% Sample" = 0 , "80% Sample" = 0)
+
+# Starting a for loop that iterates 1000 times
+for(i in 1:1000) {
+  
+  # Taking random sample using sample size determined above 
+  # Getting random samples
+  abSample1 <- randomSample(diamonds, n1, FALSE)
+  abSample10 <- randomSample(diamonds, n10, FALSE)
+  abSample25 <- randomSample(diamonds, n25, FALSE)
+  abSample50 <- randomSample(diamonds, n50, FALSE)
+  abSample80 <- randomSample(diamonds, n80, FALSE)
+  
+  # Adding sample to the empty dataset
+  Samples1000[i,]<- c(mean(abSample1$carat),
+                      mean(abSample10$carat),
+                      mean(abSample25$carat),
+                      mean(abSample50$carat),
+                      mean(abSample80$carat))
+  
+}
+
+# Now the dataframe has four columns coressponding to each the four calculated sample statistcs and 1000 rows for 1000 samples.
+# The 1%, 10%, 25%, 50%, and 80% sample sizes each make up 1/5 of the dataframe
+str(Samples1000)
+
+```
+
+
+###Question 4 `diamonds$carat`
+
+```{r}
+
+# Adding the 100% sample to the dataframe
+Samples1000[,6] <- abSample100[3,]
+
+# Naming rows and columns of Samples1000 dataframe
+colnames(Samples1000) <- c("x1_Sample", "x10_Sample", "x25_Sample", "x50_Sample", 
+                           "x80_Sample", "x100_Sample")
+
+# Creating grid of histograms
+histGrid(Samples1000)
+
+```
+
+
+###Question 5 `diamonds$carat`
+
+```{r}
+
+# Adding Mins Samples1000 to SampleStats
+SampleStats[5,] <- c(min(Samples1000[,1]), max(Samples1000[,2]), min(Samples1000[,3]), 
+                     min(Samples1000[,4]), min(Samples1000[,5]), min(Samples1000[,6]))
+
+# Adding Maxes Samples1000 to SampleStats
+SampleStats[6,] <- c(max(Samples1000[,1]), max(Samples1000[,2]), max(Samples1000[,3]), 
+                     max(Samples1000[,4]), max(Samples1000[,5]), max(Samples1000[,6]))
+
+# Adding Means Samples1000 to SampleStats
+SampleStats[7,] <- c(mean(Samples1000[,1]), mean(Samples1000[,2]), mean(Samples1000[,3]), 
+                     mean(Samples1000[,4]), mean(Samples1000[,5]), mean(Samples1000[,6]))
+
+# Adding variances Samples1000 to SampleStats
+SampleStats[8,] <- c(var(Samples1000[,1]), var(Samples1000[,2]), var(Samples1000[,3]), 
+                     var(Samples1000[,4]), var(Samples1000[,5]), var(Samples1000[,6]))
+
+# Updating row names for newly added columns
+rownames(SampleStats)[5:8] <- c("ResampleMin", "ResampleMax", "ResampleMean", "ResampleVariance")
+
+# New SampleStats dataframe - transposed with new Resample rows added
+SampleStats
+```
+
+
+###Question 6 `diamonds$carat`
+```{r}
+# Creating a histogram
+sampleMeans <- data.frame(t(SampleStats["SampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=diamonds, aes(x=carat, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =sampleMeans,(aes(xintercept = SampleMean, colour = "red" )))
+print(hist)
+```
+
+
+###Question 7 `diamonds$carat`
+```{r}
+# Creating a histogram
+resampleMeans <- data.frame(t(SampleStats["ResampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=diamonds, aes(x=carat, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =resampleMeans,(aes(xintercept = ResampleMean, colour = "red" )))
+print(hist)
+```
+
+
+
+
+####Question 1 `faithful$eruptions`
+
+```{r}
+
+# To get random samples, using the random samples function from class. 
+
+# Calculating sample sizes for 1%, 10%, 25%, 50%, 80% samples
+n1 <- as.integer(.01 * nrow(faithful))
+n10 <- as.integer(.10 * nrow(faithful))
+n25 <- as.integer(.25 * nrow(faithful))
+n50 <- as.integer(.5 * nrow(faithful))
+n80 <- as.integer(.8 * nrow(faithful))
+
+# Getting random samples
+abSample1 <- randomSample(faithful, n1, FALSE)
+abSample10 <- randomSample(faithful, n10, FALSE)
+abSample25 <- randomSample(faithful, n25, FALSE)
+abSample50 <- randomSample(faithful, n50, FALSE)
+abSample80 <- randomSample(faithful, n80, FALSE)
+
+# Creating dataframes with min, max, mean, and variance for each sample 
+abSample1 <- data.frame(c( min(abSample1$eruptions), max(abSample1$eruptions), mean(abSample1$eruptions), var(abSample1$eruptions) ))
+abSample10 <- data.frame(c( min(abSample10$eruptions), max(abSample10$eruptions), mean(abSample10$eruptions), var(abSample10$eruptions) ))
+abSample25 <- data.frame(c( min(abSample25$eruptions), max(abSample25$eruptions), mean(abSample25$eruptions), var(abSample25$eruptions) ))
+abSample50 <- data.frame(c( min(abSample50$eruptions), max(abSample50$eruptions), mean(abSample50$eruptions), var(abSample50$eruptions) ))
+abSample80 <- data.frame(c( min(abSample80$eruptions), max(abSample80$eruptions), mean(abSample80$eruptions), var(abSample80$eruptions) ))
+abSample100 <- data.frame(c( min(faithful$eruptions), max(faithful$eruptions), mean(faithful$eruptions), var(faithful$eruptions) ))
+
+# Combining dataframes of summary statistics from samples
+SampleStats <- cbind(abSample1, abSample10, abSample25, abSample50, abSample80, abSample100)
+
+# Naming rows and columns of SampleStats dataframe
+colnames(SampleStats) <- c("1% Sample", "10% Sample", "25% Sample", "50% Sample", "80% Sample", "100% Sample")
+rownames(SampleStats) <- c("SampleMin", "SampleMax", "SampleMean", "SampleVariance")
+
+# 6 columns and 4 fours, just like the question asks.
+str(SampleStats)
+
+```
+
+
+####Question 2 `faithful$eruptions`
+
+```{r}
+
+# Running function of 
+histGrid(SampleStats, transpose=TRUE)
+
+```
+
+
+####Question 3 `faithful$eruptions`
+
+```{r}
+
+# Creating an empty dataframe that will be used to store 1000 samples
+Samples1000 <- data.frame("1% Sample" = 0, "10% Sample" = 0, "25% Sample" = 0, "50% Sample" = 0 , "80% Sample" = 0)
+
+# Starting a for loop that iterates 1000 times
+for(i in 1:1000) {
+  
+  # Taking random sample using sample size determined above 
+  # Getting random samples
+  abSample1 <- randomSample(faithful, n1, FALSE)
+  abSample10 <- randomSample(faithful, n10, FALSE)
+  abSample25 <- randomSample(faithful, n25, FALSE)
+  abSample50 <- randomSample(faithful, n50, FALSE)
+  abSample80 <- randomSample(faithful, n80, FALSE)
+  
+  # Adding sample to the empty dataset
+  Samples1000[i,]<- c(mean(abSample1$eruptions),
+                      mean(abSample10$eruptions),
+                      mean(abSample25$eruptions),
+                      mean(abSample50$eruptions),
+                      mean(abSample80$eruptions))
+  
+}
+
+# Now the dataframe has four columns coressponding to each the four calculated sample statistcs and 1000 rows for 1000 samples.
+# The 1%, 10%, 25%, 50%, and 80% sample sizes each make up 1/5 of the dataframe
+str(Samples1000)
+
+```
+
+
+###Question 4 `faithful$eruptions`
+
+```{r}
+
+# Adding the 100% sample to the dataframe
+Samples1000[,6] <- abSample100[3,]
+
+# Naming rows and columns of Samples1000 dataframe
+colnames(Samples1000) <- c("x1_Sample", "x10_Sample", "x25_Sample", "x50_Sample", 
+                           "x80_Sample", "x100_Sample")
+
+# Creating grid of histograms
+histGrid(Samples1000)
+
+```
+
+
+###Question 5 `faithful$eruptions`
+
+```{r}
+
+# Adding Mins Samples1000 to SampleStats
+SampleStats[5,] <- c(min(Samples1000[,1]), max(Samples1000[,2]), min(Samples1000[,3]), 
+                     min(Samples1000[,4]), min(Samples1000[,5]), min(Samples1000[,6]))
+
+# Adding Maxes Samples1000 to SampleStats
+SampleStats[6,] <- c(max(Samples1000[,1]), max(Samples1000[,2]), max(Samples1000[,3]), 
+                     max(Samples1000[,4]), max(Samples1000[,5]), max(Samples1000[,6]))
+
+# Adding Means Samples1000 to SampleStats
+SampleStats[7,] <- c(mean(Samples1000[,1]), mean(Samples1000[,2]), mean(Samples1000[,3]), 
+                     mean(Samples1000[,4]), mean(Samples1000[,5]), mean(Samples1000[,6]))
+
+# Adding variances Samples1000 to SampleStats
+SampleStats[8,] <- c(var(Samples1000[,1]), var(Samples1000[,2]), var(Samples1000[,3]), 
+                     var(Samples1000[,4]), var(Samples1000[,5]), var(Samples1000[,6]))
+
+# Updating row names for newly added columns
+rownames(SampleStats)[5:8] <- c("ResampleMin", "ResampleMax", "ResampleMean", "ResampleVariance")
+
+# New SampleStats dataframe - transposed with new Resample rows added
+SampleStats
+```
+
+
+###Question 6 `faithful$eruptions`
+```{r}
+# Creating a histogram
+sampleMeans <- data.frame(t(SampleStats["SampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=faithful, aes(x=eruptions, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =sampleMeans,(aes(xintercept = SampleMean, colour = "red" )))
+print(hist)
+```
+
+
+###Question 7 `faithful$eruptions`
+```{r}
+# Creating a histogram
+resampleMeans <- data.frame(t(SampleStats["ResampleMean",]))
+
+hist <- ggplot() 
+    # Updating plot to be histogram of density of distribution of statistic
+    hist <- hist + geom_histogram(data=faithful, aes(x=eruptions, y = ..density..), binwidth=0.01)
+    hist <- hist + geom_vline(data =resampleMeans,(aes(xintercept = ResampleMean, colour = "red" )))
+print(hist)
+```
+
+
+
+##Question 8 --END
+
+
+###Question 9
+
+For all three data sets, we see that larger sample sizes lead to better estimates. Larger sample size and greater number of samples both lead to predicted means closer to the actual mean. The distribution of means from the sampleMeans column varies since there is only 1 sample at a given sample size. For all three of the datasets, the Resample Mean alines much closer to the actual mean and the variance of the distribution of means is much lower. 
