@@ -155,16 +155,20 @@ labels
 ```{r}
 fns <- paste("fn", 1:30, sep = "")
 fns
+# SW: see also paste0()
 ```
 
 
 ** Question Six **
 Creating two random vectors `xVec` and `yVec`
 ```{r}
+set.seed(50)
 xVec <- sample(0:999, 250, replace=T)
 yVec <- sample(0:999, 250, replace=T)
 xVec
 yVec
+# SW: lost points: you needed to use set.seed() to ensure reproducible results; 
+# I've added it for you for the remaining problems
 ```
 
 *A.* Creating a vector of `yVec(i) - xVec(i-2)`
@@ -241,6 +245,11 @@ ymax200 <- length(yVec[yVec <= (max(yVec)-200)])
 ymax200
 
 # 194 values in yVec are within 200 of the max value
+# SW: lost points: look at the values of ymax200, many of them clearly are not 
+# within 200 of max(yVec). your code is subtracting 200 from the max, then 
+# returning all values of yVec less than that. that's a different question than 
+# all values _within_ 200 of the max. here's the code you need:
+length(yVec[abs(yVec - max(yVec)) <= 200])
 ```
 
 
@@ -257,7 +266,8 @@ evenX
 ```{r}
 sort(xVec, partial = order(yVec))
 xVec
-
+# SW: lost points: incorrect sort, you want
+xVec[order(yVec)]
 ```
 
 *H.*
