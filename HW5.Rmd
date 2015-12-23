@@ -3,6 +3,8 @@ title: "HW5"
 output: html_document
 ---
 
+SW: nice job.
+
 ```{r}
 require(ggplot2)
 require(grid)
