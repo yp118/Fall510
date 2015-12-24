@@ -5,6 +5,7 @@ date: "October 22, 2015"
 output: html_document
 ---
 
+SW: did you test your code? it doesn't work as written. i've modified it to get it going, you had a stray 's' in your `return` statement. overall, nice job. you need to consider the absolute value of the correlation coefficient, though; currently, you're only looking at positive values.
 
 ```{r}
 require(ggplot2)
@@ -159,7 +160,9 @@ explore <- function(df, vec, thresh) {
   names(threshCorrs) <- c('Pairs', "Pearsons's Corr.")
   
   # Adding threshCorrs to returnList - any correlation greater than our threshold.
-  returnList <- c(returnList, list(threshCorrs))s
+  # SW: this is broken
+  #returnList <- c(returnList, list(threshCorrs))s
+  returnList <- c(returnList, list(threshCorrs))
   
   
   # Returning final list for function
